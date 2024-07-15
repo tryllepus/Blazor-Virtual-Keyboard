@@ -5,7 +5,7 @@ Currently only supports Blazor Webassembly on .NET 8 - support for Blazor Server
 
 NOTE: This is simply a proof of concept/prototype, and therefore does not support all use cases. As JavaScript and Blazor has to notify each other of changes and such, I have created Blazor components called FormVirtualKeyboard.razor and InputVirtualKeyboard.razor which are the only components that support integration of this keyboard.
 
-![Alphabetic keyboard](https://i.imgur.com/a/A15qSeE)
+![Alphabetic keyboard]([https://i.imgur.com/a/A15qSeE](https://i.imgur.com/yU4Bx4H.png))
 
 I have tried to minimize the amount of JavaScript in the implementation of this virtual keyboard / on-screen keyboard component. This has resulted in some use cases not being supported, and some atypical conventions in the code. Only minimum refactoring has been done as of now, which might be why there can (will) be code smells and minor bugs.
 
