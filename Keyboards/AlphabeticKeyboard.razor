@@ -1,0 +1,80 @@
+﻿@using System.Text.Json
+@using BlazorVirtualKeyboard.Services
+@using Microsoft.JSInterop
+@* @inject HttpClient Http *@
+@inject IJSRuntime JSRuntime
+@inject VirtualKeyboardService VKS
+@implements IDisposable
+@namespace BlazorVirtualKeyboard.Keyboards
+@using Microsoft.AspNetCore.Components.Web
+
+@if (keyRowPairs != null)
+{
+    @foreach (var row in keyRowPairs)
+    {
+        // See TODO below regarding this if branch
+        @if (row.Contains("æ"))
+        {
+            <div class="second-row">
+                <div class="keyboard-row">
+                    @foreach (var key in row)
+                    {
+                        <button @onclick="() => OnKeyPress.InvokeAsync(key)" class="@VKS.GetKeyClass(key)">
+                            @VKS.GetKeyLabel(key)
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="keyboard-row">
+                @foreach (var key in row)
+                {
+                    <button @onclick="() =>  OnKeyPress.InvokeAsync(key)" class="@VKS.GetKeyClass(key)">
+                        @VKS.GetKeyLabel(key)
+                    </button>
+                }
+            </div>
+        }
+    }
+}
+else
+{
+    <p>No data available for this keyboard layout.</p>
+}
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    [Parameter]
+    public List<List<string>>? Rows { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnKeyPress { get; set; }
+
+    private List<List<string>>? keyRowPairs;
+    private List<List<string>>? previousRows;
+
+    protected override void OnParametersSet()
+    {
+        if (Rows != previousRows)
+        {            
+            keyRowPairs = new();
+            if (Rows != null)
+            {
+                foreach (var row in Rows)
+                {
+                    keyRowPairs.Add(row);
+                }
+            }
+            previousRows = Rows;
+        }
+    }
+
+    public void Dispose()
+    {
+        
+    }
+}

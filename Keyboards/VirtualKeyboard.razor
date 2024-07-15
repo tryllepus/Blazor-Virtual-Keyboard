@@ -1,0 +1,291 @@
+﻿@using System.Text.Json
+@using BlazorVirtualKeyboard.Services
+@using Microsoft.JSInterop
+@using System.Net.Http
+@using Serilog
+@using System.Net.Http.Json
+@using BlazorVirtualKeyboard.Keyboards
+@using BlazorVirtualKeyboard.Models
+@using Microsoft.AspNetCore.Components.Web
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject VirtualKeyboardService VKS
+@inject NavigationManager Navigation
+@namespace BlazorVirtualKeyboard.Keyboards
+@implements IDisposable
+
+@* We use tabindex=0 to make the keyboard div focusable, as divs are normally not. *@
+<div tabindex="0" class="keyboard-wrapper keyboard--hidden" id="keyboard">
+    <div class="keyboard @_layout.Name">
+        @if (_layout != null)
+        {
+            @switch (_layout.Name)
+            {
+                case "numsChars":
+                    <SymbolKeyboard Name="@_layout.Name" Column1="@_layout.ColumnRows[0]" Column2="@_layout.ColumnRows[1]" OnKeyPress="OnKeyPress" />
+                    break;
+                case "numpad":
+                    <NumericKeypad Name="@_layout.Name" Column1="@_layout.ColumnRows[0]" Column2="@_layout.ColumnRows[1]" OnKeyPress="OnKeyPress" />
+                    break;
+                default:
+                    <AlphabeticKeyboard Rows="@_layout.Rows" Name="@_layout.Name" OnKeyPress="OnKeyPress" />
+                    break;
+            }
+        }
+        else
+        {
+            <h5>
+                keyboard is null
+            </h5>
+        }
+    </div>
+    <div class="keyboard-layouts @GetPopupClass">
+        @foreach (var keyboardLayout in _keyboardLayouts)
+        {
+            @if (keyboardLayout != _layout.Name && keyboardLayout != "nums_chars")
+            {
+                @if (keyboardLayout == "full_keyboard")
+                {
+                    <button @onclick="@(() => AddNumbersRowToLayout())">
+                        Full Layout
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="@(() => LoadKeyboardLayout(keyboardLayout))">
+                        @keyboardLayout.ToUpper()
+                    </button>
+                }
+            }
+        }
+    </div>
+</div>
+
+
+
+@code {
+    private KeyboardLayout _layout = new KeyboardLayout();
+    private KeyboardLayout _lastLayout = new KeyboardLayout();
+    private List<string> _keyboardLayouts = new List<string>();
+    private List<string> _numbersRow = new List<string>();
+    private string? _currentInputId;
+    private string GetPopupClass => VKS.showPopup == true ? "active" : "";
+    private IJSInProcessObjectReference? module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.BaseAddress = new Uri(Navigation.BaseUri);
+        await GetKeyboardLayouts();
+        // await LoadKeyboardLayout("danish");
+
+        VKS.OnInputIdChanged += InputIdChanged;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("listenToKeyboard");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error importing or invoking JS: {ex.Message}");
+            }
+        }
+    }
+
+
+    private async Task GetKeyboardLayouts()
+    {
+        try
+        {
+            _keyboardLayouts = await Http.GetFromJsonAsync<List<string>>("_content/BlazorVirtualKeyboard/KeyboardLayouts/keyboardLayouts.json");
+        }
+        catch (HttpRequestException ex)
+        {
+            Log.Error($"Failed to load keyboard layouts: {ex.Message}");
+        }
+    }
+
+    private async Task LoadKeyboardLayout(string fileName)
+    {
+        try
+        {
+            var layout = await Http.GetFromJsonAsync<KeyboardLayout>($"_content/BlazorVirtualKeyboard/KeyboardLayouts/{fileName}.json");
+            _layout.Name = fileName;
+            if (layout.Rows != null)
+            {
+                _layout.Rows = layout.Rows;
+            }
+            else if (layout.ColumnRows != null)
+            {
+                _layout.ColumnRows = layout.ColumnRows;
+            }
+            else
+            {
+                // Handle the case where deserialization returns null
+                Log.Warning("Failed to load or parse the keyboard layout.");
+            }
+            VKS.showPopup = false;
+            StateHasChanged();
+        }
+        catch (HttpRequestException e)
+        {
+            Log.Error($"Error loading layout: {e.Message}");
+        }
+        catch (JsonException e)
+        {
+            Log.Error($"JSON Parsing Error: {e.Message}");
+        }
+    }
+
+
+    private async Task LoadNumbersRow()
+    {
+        var numbersLayout = await Http.GetFromJsonAsync<Dictionary<string, List<string>>>("_content/BlazorVirtualKeyboard/KeyboardLayouts/full_keyboard.json");
+        _numbersRow = numbersLayout["numbersRow"];
+    }
+
+    private async Task AddNumbersRowToLayout()
+    {
+        await LoadNumbersRow();
+
+        if (!_layout.Rows[0].SequenceEqual(_numbersRow) && _layout.Name != "nums_chars")
+        {
+            Log.Information($"Inserting number row: {_numbersRow}");
+            _layout.Rows.Insert(0, _numbersRow);
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("scrollDown");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed trying to call scrollDown: {ex}");
+            }
+            VKS.showPopup = false;
+            StateHasChanged();
+        }
+        else
+        {
+            Log.Information("Could not insert");
+        }
+    }
+
+    public async void InputIdChanged(string id)
+    {
+        _currentInputId = id;
+        switch (_currentInputId)
+        {
+            case "time":
+            case "date":
+            case "number":
+                await LoadKeyboardLayout("numpad");
+                break;
+            case "tel":
+                await LoadKeyboardLayout("numsChars");
+                break;
+            default:
+                await LoadKeyboardLayout("danish");
+                break;
+        }
+    }
+
+    private async void OnKeyPress(string key)
+    {
+        if (string.IsNullOrEmpty(_currentInputId))
+        {
+            Console.WriteLine("Caught in OnKeyPres: No input field is currently focused.");
+            return;
+        }
+
+        int cursorPosition;
+        string? newValue;
+        var currentInputValue = VKS.GetInputValue(_currentInputId);
+        switch (key)
+        {
+            case "backspace":
+                cursorPosition = await VKS.GetCursorPosition(_currentInputId);
+                if (!string.IsNullOrEmpty(currentInputValue) && cursorPosition > 0 && key == "backspace")
+                {
+                    newValue = currentInputValue.Remove(cursorPosition - 1, 1);
+                    var newPosition = cursorPosition - 1;
+
+                    // Call JS to handle both value and cursor position
+                    VKS.SetInputValue(_currentInputId, newValue);
+                    await VKS.SetInputValueJS(_currentInputId, newValue);
+                    await VKS.SetCursorPosition(_currentInputId, cursorPosition - 1);
+                }
+                break;
+
+            case "shift":
+                VKS.CapsLock = !VKS.CapsLock;
+                break;
+
+            case "enter":
+                VKS.EnterKeyPressed();
+                break;
+
+            case "space":
+                cursorPosition = await VKS.GetCursorPosition(_currentInputId);
+                newValue = currentInputValue.Insert(cursorPosition, " ");
+                VKS.SetInputValue(_currentInputId, newValue);
+                await VKS.SetInputValueJS(_currentInputId, newValue);
+                await VKS.SetCursorPosition(_currentInputId, cursorPosition + 1);
+                break;
+
+            case "globe":
+                VKS.showPopup = !VKS.showPopup;
+                break;
+
+            case "letters":
+                if (_lastLayout.Name != _layout.Name && !string.IsNullOrWhiteSpace(_lastLayout.Name))
+                {
+                    Log.Information($"Switching back to last layout: {_lastLayout.Name}");
+                    await LoadKeyboardLayout(_lastLayout.Name);
+                }
+                else
+                {
+                    Log.Warning("Attempted to load an unset last layout.");
+                    await LoadKeyboardLayout("danish");
+                }
+                break;
+
+            case "numbers":
+                _lastLayout.Name = _layout.Name;
+                _lastLayout.Rows = _layout.Rows;
+                Log.Information($"Switching to numsChars layout, saving last layout: {_lastLayout.Name}");
+                await LoadKeyboardLayout("numsChars");
+                break;
+
+            case "left":
+                cursorPosition = await VKS.GetCursorPosition(_currentInputId);
+                if (cursorPosition > 0)
+                {
+                    await VKS.SetCursorPosition(_currentInputId, cursorPosition - 1);
+                }
+                break;
+
+            case "right":
+                cursorPosition = await VKS.GetCursorPosition(_currentInputId);
+                if (cursorPosition < currentInputValue.Length)
+                {
+                    await VKS.SetCursorPosition(_currentInputId, cursorPosition + 1);
+                }
+                break;
+
+            default:
+                cursorPosition = await VKS.GetCursorPosition(_currentInputId);
+                newValue = currentInputValue.Insert(cursorPosition, (VKS.CapsLock ? key.ToUpper() : key.ToLower()));
+                VKS.SetInputValue(_currentInputId, newValue);
+                await VKS.SetInputValueJS(_currentInputId, newValue);
+                await VKS.SetCursorPosition(_currentInputId, cursorPosition + 1);
+                break;
+        }
+    }
+
+
+    public void Dispose()
+    {
+    }
+}

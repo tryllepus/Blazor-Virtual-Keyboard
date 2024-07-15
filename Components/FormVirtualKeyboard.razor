@@ -1,0 +1,67 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using BlazorVirtualKeyboard.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject VirtualKeyboardService VKS
+@namespace BlazorVirtualKeyboard.Components
+
+<EditForm EditContext="@EditContext" OnValidSubmit="@FormAction" id="@FormId" class="@FormClass">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    @ChildContent
+</EditForm>
+
+@code {
+    private DotNetObjectReference<FormVirtualKeyboard>? formObjRef;
+
+    [Parameter]
+    public Action FormAction { get; set; }
+
+    [Parameter]
+    public string FormClass { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string FormId { get; set; }
+
+    [Parameter]
+    public EditContext EditContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        formObjRef = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("registerFormFocusEvents", formObjRef, FormId);
+        }
+    }
+
+    [JSInvokable]
+    public void FormHasFocus(string id)
+    {
+        VKS.SetEnterKeyAction(() =>
+        {
+            if (EditContext.Validate())
+            {
+                FormAction.Invoke();
+            }
+        });
+    }
+
+    [JSInvokable]
+    public void FormLostFocus(string id)
+    {
+        VKS.SetEnterKeyAction(null);
+    }
+    
+    public void Dispose() => formObjRef?.Dispose();
+}

@@ -1,0 +1,8 @@
+{
+  "rows": [
+    [ "a", "z", "e", "r", "t", "y", "u", "i", "o", "p", "backspace" ],
+    [ "q", "s", "d", "f", "g", "h", "j", "k", "l", "m", "enter" ],
+    [ "shift", "w", "x", "c", "v", "b", "n", "é", "è", "ç", "à", "shift" ],
+    [ "numbers", "globe", "space", "left", "right" ]
+  ]
+}

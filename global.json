@@ -1,0 +1,5 @@
+{
+  "sdk": {
+    "version": "8.0.302" // Erstat med den specifikke version af .NET 8 SDK du ønsker at bruge
+  }
+}

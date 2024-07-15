@@ -1,0 +1,190 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Title>BlazorVirtualKeyboard</Title>
+    <Authors>Daniel Cavicchia Hansen</Authors>
+	<StaticWebAssetsEnabled>True</StaticWebAssetsEnabled>
+    <Copyright>(c) Daniel Cavicchia Hansen</Copyright>
+    <Description>An on-screen keyboard component developed mainly using C# and HTML. JavaScript is minimized as much as possible.
+</Description>
+    <PackageIcon>keyboard.png</PackageIcon>
+    <Version>1.0.2</Version>
+  </PropertyGroup>
+	
+	<PropertyGroup>
+		<EnableDefaultContentItems>false</EnableDefaultContentItems>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+    <None Include="..\..\..\..\Users\danih\Downloads\keyboard.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Keyboards\**\*.razor">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>Keyboards</PackagePath>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Components\**\*.razor">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>Components</PackagePath>
+		</Content>
+	</ItemGroup>
+	<!--<ItemGroup>
+		--><!-- Sikre at KeyboardLayouts også behandles som statiske webressourcer --><!--
+		<Content Include="KeyboardLayouts\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+		</Content>
+	</ItemGroup>-->
+	<ItemGroup>
+		<Content Include="KeyboardLayouts/**/*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+			<IncludeInPackage>true</IncludeInPackage>
+			<Pack>true</Pack>
+			<PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="wwwroot\KeyboardLayouts\arabic.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\danish.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\english.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\french.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\full_keyboard.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\german.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\keyboardLayouts.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\numpad.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\numsChars.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\russian.json" />
+	  <None Remove="wwwroot\KeyboardLayouts\spanish.json" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="wwwroot\KeyboardLayouts\arabic.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\danish.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\english.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\french.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\full_keyboard.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\german.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\keyboardLayouts.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\numpad.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\numsChars.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\russian.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="wwwroot\KeyboardLayouts\spanish.json">
+	    <PackagePath>staticwebassets\KeyboardLayouts</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <IncludeInPackage>true</IncludeInPackage>
+	    <PackageCopyToOutput>true</PackageCopyToOutput>
+	    <Pack>true</Pack>
+	  </Content>
+	</ItemGroup>
+
+	<!--<ItemGroup>
+	  <Content Include="wwwroot\JavaScript\**\*.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Pack>true</Pack>
+		<PackagePath>wwwroot\JavaScript</PackagePath>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Components\FormVirtualKeyboard.razor.js" />
+	  <None Remove="Keyboards\VirtualKeyboard.razor.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Components\FormVirtualKeyboard.razor.js">
+	    <PackagePath>wwwroot\JavaScript</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <Pack>true</Pack>
+	  </Content>
+	  <Content Include="Keyboards\VirtualKeyboard.razor.js">
+	    <PackagePath>wwwroot\JavaScript</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <Pack>true</Pack>
+	  </Content>
+	</ItemGroup>-->
+
+	<ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="NuGet.CommandLine" Version="6.10.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="2.0.0" />
+  </ItemGroup>
+</Project>

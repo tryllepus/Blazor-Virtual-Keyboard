@@ -1,0 +1,91 @@
+﻿@using BlazorVirtualKeyboard.Services
+@using Microsoft.JSInterop
+@inject VirtualKeyboardService VKS
+@inject IJSRuntime JS
+@namespace BlazorVirtualKeyboard.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<input @bind="@InputValue"
+       @oninput="@UpdateInputValue"
+        type="@Type"
+        class="use-keyboard" 
+        placeholder="@Placeholder"
+        id="@Id" autocomplete="off" />
+
+@* We use the @oninput so that every time the input is altered, we update the input value of the field.
+    The event is dispatched for @oninput in virtualKeyboard.js by input.dispatchEvent.
+*@
+
+@code {
+    private string _inputValue;
+    private DotNetObjectReference<InputVirtualkeyboard>? objRef;
+
+    // Here we ensure that we can make a two-way binding to the value of the input field
+    // This is so that we can send the input values changes to the parent component (e.g. for the Login Form in TestScreen.razor)
+    [Parameter]
+    public string InputValue
+    {
+        get => _inputValue;
+        set
+        {
+            if (_inputValue != value)
+            {
+                _inputValue = value;
+                InputValueChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    // This eventcallback is what we invoke to send changes to the parent component
+    [Parameter]
+    public EventCallback<string> InputValueChanged { get; set; }
+
+    [Parameter]        
+    public string Type { get; set; }
+    [Parameter]        
+    public string ClassName { get; set; }
+    [Parameter]        
+    public string Placeholder { get; set; }
+    [Parameter]        
+    public string Id { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // Create entry in global dictionary for this input field
+        VKS.SetInputValue(Id);
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    // We use the JSInvokable attribute so that we can call the focus events from Javascript
+    // allowing us to use more complex event listeners than simply focus or click events.
+    [JSInvokable]
+    public void InputHasFocus(string id)
+    {
+        VKS.InputIdChanged(id);
+    }
+
+    [JSInvokable]
+    public void InputLostFocus(string id)
+    {
+        VKS.InputIdChanged("");
+    }
+
+    // We use the registerFocusEvents to initialize the event listeners for this component
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("registerFocusEvents", objRef, Id);
+        }
+    }
+
+    private void UpdateInputValue(ChangeEventArgs e)
+    {
+        InputValue = e.Value?.ToString();
+        VKS.SetInputValue(Id, InputValue);
+    }
+
+    public void Dispose() => objRef?.Dispose();
+}

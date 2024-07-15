@@ -1,0 +1,61 @@
+﻿@using BlazorVirtualKeyboard.Services
+@inject VirtualKeyboardService VKS
+@namespace BlazorVirtualKeyboard.Keyboards
+@using Microsoft.AspNetCore.Components.Web
+
+@if (Column1 != null && Column2 != null)
+{
+    <div class="symbol-keyboard-layout">
+        <div class="keyboard-column-1">
+            @foreach (var row in Column1)
+            {
+                <div class="keyboard-row">
+                    @foreach (var key in row)
+                    {
+                        <button @onclick="() => OnKeyPress.InvokeAsync(key)" class="@VKS.GetKeyClass(key)">
+                            @VKS.GetKeyLabel(key)
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+        <div class="keyboard-column-2">
+            @foreach (var row in Column2)
+            {
+                <div class="keyboard-row">
+                    @foreach (var key in row)
+                    {
+                        <button @onclick="() => OnKeyPress.InvokeAsync(key)" class="@VKS.GetKeyClass(key)">
+                            @VKS.GetKeyLabel(key)
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    [Parameter]
+    public List<List<string>>? Column1 { get; set; }
+
+    [Parameter]
+    public List<List<string>>? Column2 { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnKeyPress { get; set; }
+
+    public SymbolKeyboard()
+    {
+        
+    }
+
+    public void Dispose()
+    {
+
+    }
+}
