@@ -14,7 +14,7 @@ TBD:
 Keyboard customization
 ### INSTALLATION
 
-Install this NuGet package in your Blazor Webassembly project on .NET 8.
+Install this NuGet package in your Blazor Webassembly project on .NET 8. or get the source code
 
 Add the following lines to your program.cs: 
 ```csharp
